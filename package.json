@@ -40,11 +40,11 @@
     "check-packages-updates": "yarn outdated"
   },
   "dependencies": {
-    "@force-dev/utils": "^1.1.59",
-    "lodash": "^4.17.21"
+    "@force-dev/utils": "^1.1.59"
   },
   "peerDependencies": {
-    "react": "^18.3.1"
+    "lodash": "^4.17.21",
+    "react": "^18.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.2",
