@@ -1,30 +1,7 @@
 import React, { memo } from "react";
-import {
-  Controller,
-  ControllerProps,
-  FieldValues,
-  UseFormReturn,
-} from "react-hook-form";
+import { Controller, FieldValues, FormProvider } from "react-hook-form";
 
-export interface IFormField<T extends FieldValues = FieldValues>
-  extends Omit<ControllerProps<T>, "control" | "render"> {
-  render?: (
-    field: Parameters<ControllerProps<T>["render"]>[0] & {
-      form: UseFormReturn<T>;
-    },
-  ) => React.ReactElement | null;
-}
-
-export type IRenderFieldLayout<T extends FieldValues = FieldValues> = (
-  children: React.ReactNode,
-  field: Parameters<ControllerProps<T>["render"]>[0],
-) => React.ReactElement;
-
-export interface IFormProps<T extends FieldValues = FieldValues> {
-  form: UseFormReturn<T>;
-  fields: IFormField<T>[];
-  renderFieldLayout?: IRenderFieldLayout<T>;
-}
+import { IFormProps } from "./types";
 
 const _Form = <T extends FieldValues>({
   fields,
@@ -32,7 +9,7 @@ const _Form = <T extends FieldValues>({
   renderFieldLayout = children => <>{children}</>,
 }: IFormProps<T>) => {
   return (
-    <>
+    <FormProvider {...form}>
       {fields.map(({ render = () => null, ...field }, index) => {
         return (
           <Controller
@@ -48,7 +25,7 @@ const _Form = <T extends FieldValues>({
           />
         );
       })}
-    </>
+    </FormProvider>
   );
 };
 

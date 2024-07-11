@@ -1,66 +1,36 @@
 import React, {
-  createContext,
   memo,
   PropsWithChildren,
-  useContext,
+  useEffect,
+  useMemo,
   useRef,
+  useState,
 } from "react";
-import {
-  FieldValues,
-  useForm,
-  UseFormProps,
-  UseFormReturn,
-} from "react-hook-form";
+import { FieldValues, useForm } from "react-hook-form";
 
-import { Form, IFormProps } from "./Form";
-import { useWizardStep } from "./hooks";
-
-export interface IWizardActions {
-  nextStep: () => void;
-  prevStep: () => void;
-  onSubmit: () => void;
-}
-
-export interface IWizardFormContext<T extends FieldValues = FieldValues>
-  extends IWizardActions {
-  step: number;
-  currentForm: UseFormReturn<T>;
-  getForm: <TT extends T = T>(step: number) => UseFormReturn<TT>;
-  isValid: boolean;
-  isLastStep: boolean;
-}
-
-const WizardFormContext = createContext<IWizardFormContext<any>>({} as any);
-
-export type IWizard<T extends FieldValues = FieldValues> = Omit<
-  IFormProps<T>,
-  "form" | "fields"
-> & {
-  name: string;
-  fields:
-    | IFormProps<T>["fields"]
-    | ((
-        context: Omit<IWizardFormContext<T>, keyof IWizardActions>,
-      ) => IFormProps<T>["fields"]);
-  formProps: UseFormProps<T>;
-  handleSubmit: (
-    data: T,
-    context: Omit<IWizardFormContext<T>, keyof IWizardActions>,
-  ) => void;
-};
-
-export interface IWizardFormProps<T extends FieldValues = FieldValues> {
-  wizards: IWizard<T>[];
-  renderHeader?: (context: IWizardFormContext<T>) => React.ReactElement | null;
-  renderFooter?: (context: IWizardFormContext<T>) => React.ReactElement | null;
-}
+import { Form } from "./Form";
+import { useStep, WizardFormContext } from "./hooks";
+import { IWizardActions, IWizardFormContext, IWizardFormProps } from "./types";
 
 const _WizardForm = <T extends FieldValues>({
   wizards,
   renderHeader: RenderHeader = () => null,
   renderFooter: RenderFooter = () => null,
+  onSubmit: handleSubmit,
 }: PropsWithChildren<IWizardFormProps<T>>) => {
-  const [step, nextStep, prevStep] = useWizardStep(0, wizards.length - 1);
+  const [step, nextStep, prevStep] = useStep(0, wizards.length - 1);
+  const [values, setValues] = useState<T>({} as T);
+
+  useEffect(() => {
+    const { unsubscribe } = _forms[step].watch(value => {
+      setValues(oldValues => ({ ...oldValues, ...value }));
+    });
+
+    return () => {
+      unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
 
   const _forms = useRef(
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -69,24 +39,60 @@ const _WizardForm = <T extends FieldValues>({
 
   const { name, formProps, fields: _fields, ...rest } = wizards[step];
 
-  const context = {
+  const { fields, providerValue } = useMemo(() => {
+    const isLastStep = step === wizards.length - 1;
+
+    const resetAll = () => {
+      wizards.forEach((_, index) => {
+        _forms[index].reset();
+      });
+    };
+
+    const context: Omit<IWizardFormContext<T>, keyof IWizardActions> = {
+      step,
+      values,
+      currentForm: _forms[step],
+      getForm: ((s: number) => _forms[s]) as IWizardFormContext<T>["getForm"],
+      formState: _forms[step].formState,
+      isValid: _forms[step].formState.isValid,
+      isLastStep,
+      resetAll,
+    };
+
+    const handleNextStep = () => {
+      _forms[step].handleSubmit(data => {
+        wizards[step].handleSubmit(data, context);
+        setValues(v => ({ ...data, ...v }));
+
+        if (isLastStep) {
+          handleSubmit({ ...data, ...values });
+        } else {
+          nextStep();
+        }
+      })();
+    };
+
+    const fields = typeof _fields === "function" ? _fields(context) : _fields;
+
+    const providerValue = { ...context, nextStep: handleNextStep, prevStep };
+
+    return {
+      fields,
+      providerValue,
+    };
+  }, [
+    // Важно пересчитывать все по изменению formState
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    _forms[step].formState,
+    _forms,
+    _fields,
+    handleSubmit,
+    nextStep,
+    prevStep,
     step,
-    currentForm: _forms[step],
-    getForm: ((s: number) => _forms[s]) as IWizardFormContext<T>["getForm"],
-    isValid: _forms[step].formState.isValid,
-    isLastStep: step === wizards.length - 1,
-  };
-
-  const onSubmit = () => {
-    _forms[step].handleSubmit(data => {
-      wizards[step].handleSubmit(data, context);
-      nextStep();
-    })();
-  };
-
-  const fields = typeof _fields === "function" ? _fields(context) : _fields;
-
-  const providerValue = { ...context, nextStep, prevStep, onSubmit };
+    values,
+    wizards,
+  ]);
 
   return (
     <WizardFormContext.Provider value={providerValue}>
@@ -99,12 +105,6 @@ const _WizardForm = <T extends FieldValues>({
       />
       <RenderFooter {...providerValue} />
     </WizardFormContext.Provider>
-  );
-};
-
-export const useWizardForm = <T extends FieldValues>() => {
-  return useContext<IWizardFormContext<T> & IWizardActions>(
-    WizardFormContext as any,
   );
 };
 
