@@ -3,7 +3,7 @@ import { useCallback, useState } from "react";
 export const useStep = (
   defaultStep: number = 0,
   maxStep: number = Number.MAX_SAFE_INTEGER,
-): [number, () => void, () => void] => {
+): [number, () => void, () => void, () => void] => {
   const [step, setStep] = useState(defaultStep);
 
   const nextStep = useCallback(() => {
@@ -14,5 +14,10 @@ export const useStep = (
     setStep(s => (s > 0 ? s - 1 : 0));
   }, []);
 
-  return [step, nextStep, prevStep];
+  const reset = useCallback(() => {
+    setStep(defaultStep);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return [step, nextStep, prevStep, reset];
 };

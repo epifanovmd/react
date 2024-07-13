@@ -7,19 +7,29 @@ const _Form = <T extends FieldValues>({
   fields,
   form,
   renderFieldLayout = children => <>{children}</>,
+  values = {} as T,
 }: IFormProps<T>) => {
   return (
     <FormProvider {...form}>
-      {fields.map(({ render = () => null, ...field }, index) => {
+      {fields.map(({ render = () => null, title, ...field }, index) => {
         return (
           <Controller
             key={`field-${field.name}-${index}`}
-            {...field}
+            shouldUnregister={field.shouldUnregister}
+            rules={field.rules}
+            defaultValue={field.defaultValue}
+            disabled={field.disabled}
+            name={field.name}
             control={form.control}
             render={controllerField =>
               renderFieldLayout(
-                render({ ...controllerField, form }),
-                controllerField,
+                render({ ...controllerField, form, values, title }),
+                {
+                  ...controllerField,
+                  form,
+                  values,
+                  title,
+                },
               )
             }
           />

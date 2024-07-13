@@ -1,32 +1,56 @@
 import React from "react";
 import {
+  ControllerFieldState,
   ControllerProps,
+  ControllerRenderProps,
+  FieldPath,
   FieldValues,
   FormState,
   UseFormProps,
   UseFormReturn,
+  UseFormStateReturn,
 } from "react-hook-form";
 
-export type TFieldRender<T extends FieldValues = FieldValues> = (
-  field: Parameters<ControllerProps<T>["render"]>[0] & {
-    form: UseFormReturn<T>;
-  },
-) => React.ReactElement | null;
+export interface IFormField<
+  T extends FieldValues = FieldValues,
+  TName extends keyof T = keyof T,
+> {
+  title?: string;
+  field: Omit<ControllerRenderProps<T>, "value"> & {
+    value: T[TName];
+  };
+  values: T;
+  fieldState: ControllerFieldState;
+  formState: UseFormStateReturn<T>;
+  form: UseFormReturn<T>;
+}
 
-export interface IFormField<T extends FieldValues = FieldValues>
-  extends Omit<ControllerProps<T>, "control" | "render"> {
-  render?: TFieldRender<T>;
+export type TFieldRender<
+  T extends FieldValues = FieldValues,
+  TName extends keyof T = keyof T,
+> = (field: IFormField<T, TName>) => React.ReactNode;
+
+export interface IFormFieldItem<
+  T extends FieldValues = FieldValues,
+  TName extends FieldPath<T> = FieldPath<T>,
+> extends Omit<ControllerProps<T, TName>, "control" | "render"> {
+  title?: string;
+  render?: TFieldRender<T, TName>;
 }
 
 export type TRenderFieldLayout<T extends FieldValues = FieldValues> = (
   children: React.ReactNode,
-  field: Parameters<ControllerProps<T>["render"]>[0],
+  field: IFormField<T>,
 ) => React.ReactElement;
 
-export interface IFormProps<T extends FieldValues = FieldValues> {
+export interface IFormProps<
+  T extends FieldValues = FieldValues,
+  TName extends FieldPath<T> = FieldPath<T>,
+> {
   form: UseFormReturn<T>;
-  fields: IFormField<T>[];
+  fields: IFormFieldItem<T, TName>[];
   renderFieldLayout?: TRenderFieldLayout<T>;
+  values?: T;
 }
 
 export interface IWizardActions {
@@ -37,39 +61,45 @@ export interface IWizardActions {
 export interface IWizardFormContext<T extends FieldValues = FieldValues>
   extends IWizardActions {
   step: number;
+  values: T;
   currentForm: UseFormReturn<T>;
   getForm: <TT extends T = T>(step: number) => UseFormReturn<TT>;
   formState: FormState<T>;
   isValid: boolean;
   isLastStep: boolean;
-  values: T;
   resetAll: () => void;
 }
 
-export type TWizardFields<T extends FieldValues = FieldValues> =
-  | IFormProps<T>["fields"]
-  | ((
-      context: Omit<IWizardFormContext<T>, keyof IWizardActions>,
-    ) => IFormProps<T>["fields"]);
+export type TWizardFields<
+  T extends FieldValues = FieldValues,
+  TName extends FieldPath<T> = FieldPath<T>,
+> = IFormProps<T, TName>["fields"];
 
 export type TWizardHandleSubmit<T extends FieldValues = FieldValues> = (
   data: T,
   context: Omit<IWizardFormContext<T>, keyof IWizardActions>,
-) => void;
+) => void | false | Promise<false | void>;
 
-export type IWizard<T extends FieldValues = FieldValues> = Omit<
-  IFormProps<T>,
-  "form" | "fields"
-> & {
-  name: string;
-  fields: TWizardFields<T>;
-  formProps: UseFormProps<T>;
-  handleSubmit: TWizardHandleSubmit<T>;
+export type IWizard<
+  T extends FieldValues = FieldValues,
+  TName extends FieldPath<T> = FieldPath<T>,
+> = Omit<IFormProps<T>, "form" | "fields" | "values"> & {
+  key: string;
+  fields: TWizardFields<T, TName>;
+  params: ((values: T) => UseFormProps<T>) | UseFormProps<T>;
+  handleSubmit?: TWizardHandleSubmit<T>;
 };
 
-export interface IWizardFormProps<T extends FieldValues = FieldValues> {
-  wizards: IWizard<T>[];
-  onSubmit: (values: T) => void;
+export interface IWizardFormProps<
+  T extends FieldValues = FieldValues,
+  TName extends FieldPath<T> = FieldPath<T>,
+> {
+  wizards: IWizard<T, TName>[];
+  onSubmit: (
+    values: T,
+    context: Omit<IWizardFormContext<T>, keyof IWizardActions>,
+  ) => void;
+  onChange?: (values: T | ((values: T) => T)) => void;
   renderHeader?: (context: IWizardFormContext<T>) => React.ReactElement | null;
   renderFooter?: (context: IWizardFormContext<T>) => React.ReactElement | null;
 }

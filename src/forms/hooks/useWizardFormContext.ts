@@ -19,7 +19,7 @@ export const WizardFormContext = createContext<IWizardFormContext<any>>({
   },
   step: 0,
   currentForm: undefined as any,
-  values: {},
+  values: {} as any,
   formState: {} as any,
   resetAll: () => {
     throw error;
