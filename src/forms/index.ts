@@ -1,4 +1,4 @@
 export * from "./Form";
 export * from "./FormField";
 export * from "./hooks";
-export * from "./WizardForm";
+export * from "./Wizard";
