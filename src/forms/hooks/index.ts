@@ -2,4 +2,6 @@ export * from "./useField";
 export * from "./useNumberInput";
 export * from "./useStep";
 export * from "./useTextInput";
-export * from "./useWizardFormContext";
+export * from "./useWizard";
+export * from "./useWizardContext";
+export * from "./useWizardForm";
