@@ -8,7 +8,8 @@ interface Subscription {
 }
 
 export interface IUseWizard<T extends FieldValues = FieldValues> {
-  handleSubmit: (values: T) => void;
+  handleSubmit?: (values: T) => void;
+  handleStepSubmit?: (step: number, values: T) => void;
   watch?: (keyof DeepPartial<T>)[];
 }
 
@@ -24,6 +25,7 @@ export interface IUseWizardReturn<T extends FieldValues = FieldValues> {
 
 export const useWizard = <T extends FieldValues = FieldValues>({
   handleSubmit,
+  handleStepSubmit,
   watch,
 }: IUseWizard<T>): IUseWizardReturn<T> => {
   const subscriptionRef = useRef<Subscription[]>([]);
@@ -82,15 +84,16 @@ export const useWizard = <T extends FieldValues = FieldValues>({
         const newValues = { ...v, ...data };
 
         if (step === ref.current.length - 1) {
-          handleSubmit(newValues);
+          handleSubmit?.(newValues);
         } else {
+          handleStepSubmit?.(step, newValues);
           nextStep();
         }
 
         return newValues;
       });
     })();
-  }, [handleSubmit, nextStep, step]);
+  }, [handleSubmit, handleStepSubmit, nextStep, step]);
 
   return {
     currentForm: ref.current[step],
