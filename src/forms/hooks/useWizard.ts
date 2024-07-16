@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DeepPartial, FieldValues, UseFormReturn } from "react-hook-form";
+import {
+  DeepPartial,
+  FieldValues,
+  FormState,
+  UseFormReturn,
+} from "react-hook-form";
 
 import { useStep } from "./useStep";
 
@@ -21,6 +26,7 @@ export interface IUseWizardReturn<T extends FieldValues = FieldValues> {
   prevStep: () => void;
   handleReset: () => void;
   register: (form: UseFormReturn<T>) => void;
+  getWizardState: () => FormState<T>;
 }
 
 export const useWizard = <T extends FieldValues = FieldValues>({
@@ -95,6 +101,60 @@ export const useWizard = <T extends FieldValues = FieldValues>({
     })();
   }, [handleSubmit, handleStepSubmit, nextStep, step]);
 
+  const getWizardState = useCallback(
+    () =>
+      ref.current.reduce<FormState<T>>(
+        (acc, form) => {
+          acc.isSubmitting = acc.isSubmitting || form.formState.isSubmitting;
+          acc.isDirty = acc.isDirty || form.formState.isDirty;
+          acc.isSubmitted = acc.isSubmitted || form.formState.isSubmitted;
+          acc.defaultValues = {
+            ...((acc.defaultValues || {}) as any),
+            ...(form.formState.defaultValues || {}),
+          };
+          acc.isValid = acc.isValid || form.formState.isValid;
+          acc.errors = { ...acc.errors, ...form.formState.errors };
+          acc.disabled = acc.disabled || form.formState.disabled;
+          acc.isLoading = acc.isLoading || form.formState.isLoading;
+          acc.dirtyFields = {
+            ...acc.dirtyFields,
+            ...form.formState.dirtyFields,
+          };
+          acc.isValidating = acc.isValidating || form.formState.isValidating;
+          acc.submitCount = acc.submitCount || form.formState.submitCount;
+          acc.touchedFields = {
+            ...acc.touchedFields,
+            ...form.formState.touchedFields,
+          };
+          acc.isSubmitSuccessful =
+            acc.isSubmitSuccessful || form.formState.isSubmitSuccessful;
+          acc.validatingFields = {
+            ...acc.validatingFields,
+            ...form.formState.validatingFields,
+          };
+
+          return acc;
+        },
+        {
+          isSubmitting: false,
+          isDirty: false,
+          isSubmitted: false,
+          defaultValues: undefined,
+          isValid: false,
+          errors: {},
+          disabled: false,
+          isLoading: false,
+          dirtyFields: {},
+          isValidating: false,
+          submitCount: 0,
+          touchedFields: {},
+          isSubmitSuccessful: false,
+          validatingFields: {},
+        } as FormState<T>,
+      ),
+    [],
+  );
+
   return {
     currentForm: ref.current[step],
     values,
@@ -103,5 +163,6 @@ export const useWizard = <T extends FieldValues = FieldValues>({
     prevStep,
     handleReset,
     register,
+    getWizardState,
   };
 };
