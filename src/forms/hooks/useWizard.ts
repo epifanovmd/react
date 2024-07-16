@@ -37,7 +37,7 @@ export const useWizard = <T extends FieldValues = FieldValues>({
   const subscriptionRef = useRef<Subscription[]>([]);
   const ref = useRef<UseFormReturn<T>[]>([]);
   const [values, setValues] = useState<T>({} as T);
-  const [step, nextStep, prevStep, reset] = useStep(0);
+  const [step, nextStep, prevStep, reset] = useStep(0, ref.current.length - 1);
 
   const subscribe = useCallback(
     (form: UseFormReturn<T>, index: number) => {
