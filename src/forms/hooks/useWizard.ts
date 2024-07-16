@@ -14,7 +14,7 @@ interface Subscription {
 
 export interface IUseWizard<T extends FieldValues = FieldValues> {
   handleSubmit?: (values: T) => void;
-  handleStepSubmit?: (step: number, values: T) => void;
+  handleStepSubmit?: (step: number, values: T, form: UseFormReturn<T>) => void;
   watch?: (keyof DeepPartial<T>)[];
 }
 
@@ -92,7 +92,7 @@ export const useWizard = <T extends FieldValues = FieldValues>({
         if (step === ref.current.length - 1) {
           handleSubmit?.(newValues);
         } else {
-          handleStepSubmit?.(step, newValues);
+          handleStepSubmit?.(step, newValues, form);
           nextStep();
         }
 
