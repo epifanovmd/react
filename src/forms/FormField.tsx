@@ -1,11 +1,15 @@
-import React, { ComponentProps } from "react";
+import React, { ChangeEvent, ComponentProps } from "react";
 import {
   Controller,
+  ControllerFieldState,
   ControllerProps,
+  ControllerRenderProps,
   FieldPath,
+  FieldPathValue,
   FieldValues,
   useFormContext,
   UseFormReturn,
+  UseFormStateReturn,
 } from "react-hook-form";
 
 export interface IFormFieldProps<
@@ -16,7 +20,12 @@ export interface IFormFieldProps<
     field,
     fieldState,
     formState,
-  }: Parameters<ControllerProps<T, TName>["render"]>[0] & {
+  }: {
+    field: Omit<ControllerRenderProps<T, TName>, "onChange"> & {
+      onChange: (event: FieldPathValue<T, TName> | ChangeEvent) => void;
+    };
+    fieldState: ControllerFieldState;
+    formState: UseFormStateReturn<T>;
     form: Omit<UseFormReturn<T, TName>, "control">;
   }) => React.ReactElement;
 }
