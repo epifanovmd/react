@@ -15,7 +15,7 @@ export const useStep = (
   }, []);
 
   const reset = useCallback(() => {
-    setStep(defaultStep);
+    setStep(defaultStep > maxStep ? maxStep - 1 : defaultStep);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

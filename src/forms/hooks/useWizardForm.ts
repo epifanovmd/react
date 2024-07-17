@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import {
   FieldValues,
   useForm,
@@ -6,16 +6,20 @@ import {
   UseFormReturn,
 } from "react-hook-form";
 
+import { IWizard } from "../Wizard";
+import { IUseWizard, IUseWizardReturn } from "./useWizard";
+
 export const useWizardForm = <T extends FieldValues = FieldValues>(
-  register: (form: UseFormReturn<T>) => void,
+  wizard: IUseWizardReturn<T>,
   params: UseFormProps<T>,
 ) => {
+  const ref = useRef(false);
   const form = useForm(params);
 
-  useEffect(() => {
-    register(form);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  if (!ref.current) {
+    wizard.register(form);
+    ref.current = true;
+  }
 
   return form;
 };
