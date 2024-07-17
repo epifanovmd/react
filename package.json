@@ -1,6 +1,6 @@
 {
   "name": "@force-dev/react",
-  "version": "1.1.15",
+  "version": "1.1.16",
   "description": "React Utils library for typescript",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
