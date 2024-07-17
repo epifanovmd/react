@@ -1,3 +1,4 @@
+import { isPromise } from "@force-dev/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DeepPartial, FieldValues, UseFormReturn } from "react-hook-form";
 
@@ -8,8 +9,12 @@ interface Subscription {
 }
 
 export interface IUseWizard<T extends FieldValues = FieldValues> {
-  handleSubmit?: (values: T) => void;
-  handleStepSubmit?: (step: number, values: T, form: UseFormReturn<T>) => void;
+  handleSubmit?: (values: T) => void | Promise<void>;
+  handleStepSubmit?: (
+    step: number,
+    values: T,
+    form: UseFormReturn<T>,
+  ) => void | boolean | undefined | Promise<void | boolean | undefined>;
   watch?: (keyof DeepPartial<T>)[];
 }
 
@@ -91,17 +96,33 @@ export const useWizard = <T extends FieldValues = FieldValues>({
     const form = formsRef.current[step];
 
     form.handleSubmit(data => {
-      setValues(v => {
-        const newValues = { ...v, ...data };
+      return new Promise(resolve => {
+        setValues(v => {
+          const newValues = { ...v, ...data };
 
-        if (step === formsRef.current.length - 1) {
-          handleSubmit?.(newValues);
-        } else {
-          handleStepSubmit?.(step, newValues, form);
-          nextStep();
-        }
+          if (step === formsRef.current.length - 1) {
+            const res = handleSubmit?.(newValues);
 
-        return newValues;
+            (isPromise(res) ? res : Promise.resolve(res)).finally(() =>
+              resolve(undefined),
+            );
+          } else if (handleStepSubmit) {
+            const canNext = handleStepSubmit(step, newValues, form);
+
+            (isPromise(canNext) ? canNext : Promise.resolve(canNext))
+              .then(_canNext => {
+                if (_canNext !== false) {
+                  nextStep();
+                }
+              })
+              .finally(() => resolve(undefined));
+          } else {
+            nextStep();
+            resolve(undefined);
+          }
+
+          return newValues;
+        });
       });
     })();
   }, [handleSubmit, handleStepSubmit, nextStep, step]);
