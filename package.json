@@ -40,8 +40,9 @@
     "check-packages-updates": "yarn outdated"
   },
   "dependencies": {
-    "@force-dev/utils": "^1.1.64",
-    "react-hook-form": "^7.52.1"
+    "@force-dev/utils": "^1.1.77",
+    "react-hook-form": "^7.52.1",
+    "zod": "^3.23.8"
   },
   "peerDependencies": {
     "lodash": "^4.17.21",
