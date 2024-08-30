@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 
 export const useStep = (
-  defaultStep: number = 0,
+  defaultStep = 0,
   maxStep: number = Number.MAX_SAFE_INTEGER,
 ): [number, () => void, () => void, () => void] => {
   const [step, setStep] = useState(defaultStep);
