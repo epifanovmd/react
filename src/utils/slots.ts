@@ -85,9 +85,10 @@ export function getSlotsProps<
           }
         }
       }
-      if (!isCompound) {
-        $children.push(child);
-      }
+    }
+
+    if (!isCompound) {
+      $children.push(child);
     }
   }
 
