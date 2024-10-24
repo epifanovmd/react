@@ -28,7 +28,11 @@ interface RestChildren {
 
 export interface SlotType<P> extends FC<PropsWithChildren<P>> {}
 
-const keyIsSlot = (key: string) => key[0] === key[0].toUpperCase();
+const keyIsSlot = (key: string) => {
+  return (
+    new RegExp(/^[A-Za-z]$/).test(key[0]) && key[0] === key[0].toUpperCase()
+  );
+};
 
 export const createSlot = <P extends {}>(name: string): SlotType<P> => {
   const Slot: SlotType<P> = (({ children }) => children ?? null) as SlotType<P>;
