@@ -309,10 +309,10 @@
   resolved "https://registry.npmjs.org/@exodus/schemasafe/-/schemasafe-1.3.0.tgz"
   integrity sha512-5Aap/GaRupgNx/feGBwLLTVv8OQFfv3pq2lPRzPg9R+IOBnDgghTGW7l7EuVXOvg5cc/xSAlRW8rBrjIC3Nvqw==
 
-"@force-dev/utils@^1.4.1":
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/@force-dev/utils/-/utils-1.4.1.tgz#143051f73437ce86d463d75d289b3703fd19e149"
-  integrity sha512-ZBFRbkeHoMYF+LctICpJrF/zmgz3TaoXt/wVTW9jBpSgaV/R1SYLqdJ0A499rOsDmmgm6dORayRR/FMZ+UEXMQ==
+"@force-dev/utils@^1.4.4":
+  version "1.4.4"
+  resolved "https://registry.yarnpkg.com/@force-dev/utils/-/utils-1.4.4.tgz#fe6371c33ab362f0293690570788055c51499d0a"
+  integrity sha512-IvUhLfACyPU6bwijvXHYK5Ld2lM6qMXBWrL6nGk5hxONhbr9kEecbcO8xVsRt+0C7XRcSEnLI19E1Q+FsQmuXA==
   dependencies:
     "@types/shortid" "^0.0.32"
     axios "^1.8.4"

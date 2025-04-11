@@ -1,7 +1,7 @@
-import { IoCDecorator } from "@force-dev/utils";
+import { IoCServiceDecorator, TDecoratorMode } from "@force-dev/utils";
 import { useRef } from "react";
 
 export const iocHook =
-  <T>(ioc: IoCDecorator<T>) =>
+  <T, M extends TDecoratorMode>(ioc: IoCServiceDecorator<T, M>) =>
   () =>
     useRef(ioc.getInstance()).current;
